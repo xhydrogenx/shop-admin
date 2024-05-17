@@ -1,22 +1,14 @@
 from starlette_admin.contrib.sqla import Admin, ModelView
 from models.models_sqlalchemy import Product as SQLProduct
 from models.models_sqlalchemy import Category as SQLCategory
-from src.database import get_db, engine, SessionLocal
+from models.models_sqlalchemy import User as SQLUser
+from models.models_sqlalchemy import Order as SQLOrder
+from src.database import engine
 from starlette.applications import Starlette
 from starlette.requests import Request
 from starlette.responses import JSONResponse
-from loguru import logger
 
 app = Starlette()
-
-
-async def get_db(request: Request):
-    db = SessionLocal()
-    try:
-        request.state.db = db
-        yield db
-    finally:
-        db.close()
 
 
 @app.route("/products", methods=["GET"])
@@ -33,7 +25,7 @@ async def create_product(request: Request):
     product = SQLProduct(**product_data)
     db.add(product)
     db.commit()
-    return JSONResponse({"message": "Product created successfully"})
+    return JSONResponse(product)
 
 
 @app.route("/categories", methods=["GET"])
@@ -53,9 +45,45 @@ async def create_category(request: Request):
     return JSONResponse(category)
 
 
+@app.route("/orders", methods=["GET"])
+async def get_orders(request: Request):
+    db = request.state.db
+    orders = db.query(SQLOrder).all()
+    return JSONResponse(orders)
+
+
+@app.route("/orders", methods=["POST"])
+async def create_order(request: Request):
+    db = request.state.db
+    order_data = await request.json()
+    order = SQLCategory(**order_data)
+    db.add(order)
+    db.commit()
+    return JSONResponse(order)
+
+
+@app.route("/users", methods=["GET"])
+async def get_users(request: Request):
+    db = request.state.db
+    users = db.query(SQLUser).all()
+    return JSONResponse(users)
+
+
+@app.route("/users", methods=["POST"])
+async def create_users(request: Request):
+    db = request.state.db
+    user_data = await request.json()
+    user = SQLCategory(**user_data)
+    db.add(user)
+    db.commit()
+    return JSONResponse(user)
+
+
 admin = Admin(engine, title="Панель администрирования")
 
 admin.add_view(ModelView(SQLCategory))
 admin.add_view(ModelView(SQLProduct))
+admin.add_view(ModelView(SQLOrder))
+admin.add_view(ModelView(SQLUser))
 
 admin.mount_to(app)
