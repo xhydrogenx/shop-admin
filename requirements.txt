@@ -1,5 +1,5 @@
-loguru==0.7.2
 pydantic==2.7.1
+pydantic_settings==2.2.1
 SQLAlchemy==2.0.30
 starlette==0.37.2
 starlette_admin==0.13.2
